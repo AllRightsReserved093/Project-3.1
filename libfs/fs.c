@@ -11,13 +11,13 @@
 #define FILE_IN_ROOT 128
 
 struct superblock {
-    uint8_t signature[8];      // 签名 "ECS150FS"
-    uint16_t total_blocks;     // 总块数
-    uint16_t root_index;       // 根目录块索引
-    uint16_t data_start_index; // 数据区起始块索引
-    uint16_t data_block_count; // 数据区块数量
-    uint8_t fat_block_count;   // FAT占用块数
-    uint8_t padding[4079];     // 填充
+    uint8_t signature[8];   
+    uint16_t total_blocks;    
+    uint16_t root_index;     
+    uint16_t data_start_index;
+    uint16_t data_block_count; 
+    uint8_t fat_block_count;  
+    uint8_t padding[4079];  
 } __attribute__((packed));
 
 struct root_file {
@@ -53,7 +53,7 @@ int fs_mount(const char *diskname){
 	if (block_disk_open(diskname) != 0){
 		// Something is wrong
 
-		return 1;
+		return -1;
 	}
 
 	// Block
@@ -61,14 +61,14 @@ int fs_mount(const char *diskname){
     if (block_read(0, &disk.sb) != 0) {
         // Something is wrong
 
-		return 1;
+		return -1;
     }
 
 	// Read signature
 	if (memcmp(disk.sb.signature, "ECS150FS", 8)){
 		// Not ECS150FS system
 
-		return 1;
+		return -1;
 	}
 
 	// Read FAT
@@ -76,14 +76,14 @@ int fs_mount(const char *diskname){
 	if(!disk.FAT){
 		// Something is wrong
 
-		return 1;
+		return -1;
 	}
 
 	for(int FAT_index = 1; FAT_index <= disk.sb.fat_block_count; FAT_index++){
 		// Read FAT from block
 		if (block_read(FAT_index, &disk.FAT[(FAT_index - 1) * FAT_PER_BLOCK]) != 0) {
         	// Something is wrong
-		return 1;
+		return -1;
     	}
 	}
 
@@ -92,15 +92,14 @@ int fs_mount(const char *diskname){
 	if(!disk.root_dir){
 		// Something is wrong
 
-		return 1;
+		return -1;
 	}
 
 	if (block_read(disk.sb.root_index, disk.root_dir) != 0) {
 		// Something is wrong
-    return 1;
-}
+    return -1;
+    }
 
-	/* TODO */
 	return 0;
 }
 
@@ -110,8 +109,7 @@ int fs_umount(void)
         return -1;
 
     for (uint8_t i = 0; i < disk.sb.fat_block_count; i++) {
-        if (block_write(1 + i,
-                        &disk.FAT[i * FAT_PER_BLOCK]) != 0) {
+        if (block_write(1 + i, &disk.FAT[i * FAT_PER_BLOCK]) != 0) {
             return -1;  
         }
     }
