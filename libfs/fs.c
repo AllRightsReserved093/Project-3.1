@@ -10,13 +10,6 @@
 #define FAT_PER_BLOCK 2048 
 #define FILE_IN_ROOT 128
 
-struct mount {
-	int mounted;
-	struct superblock sb;
-	uint16_t *FAT;
-	struct root_file *root_dir;
-};
-
 struct superblock {
     uint8_t signature[8];      // 签名 "ECS150FS"
     uint16_t total_blocks;     // 总块数
@@ -33,6 +26,13 @@ struct root_file {
     uint16_t first_index;
     uint8_t padding[10];
 } __attribute__((packed));
+
+struct mount {
+	int mounted;
+	struct superblock sb;
+	uint16_t *FAT;
+	struct root_file *root_dir;
+};
 
 struct mount disk;
 
